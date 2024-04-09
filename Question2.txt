@@ -1,0 +1,209 @@
+using System;
+
+class MainClass {
+  public static void Main (string[] args) {
+     var game = new Game();
+
+     var whitePlayer = new WhitePlayer("Mark");
+     var blackPlayer = new BlackPlayer("Steve");
+
+     game.Move(whitePlayer, 1, 1, 4, 5);
+     game.Move(blackPlayer, 2, 1, 3, 7);
+
+     game.Move(whitePlayer, 3, 1, 3, 5);
+     game.Move(blackPlayer, 5, 1, 1, 7);
+     
+  }
+}
+
+
+public enum State {
+    ACTIVE, PLAYING,  WHITEWON, BLACKWON
+}
+
+public interface IGame {
+
+    void Move(Player player, int startX, int startY, int endX, int endY);
+    void GetState();
+    Color GetWinner();
+    Color WhoseTurn();
+}
+
+public class Game: IGame {
+
+    private Piece[][] board = null;
+    private State state;
+    private Color playerTurn;
+    private List<Piece> history;
+    public Game(){
+        board = new Piece[8][8];
+        state = State.ACTIVE;
+        playerTurn = Color.Black;
+        history = new List<Piece>();
+        InitGame(); 
+    }
+
+    private void Turn() {
+        playerTurn = playerTurn == Color.WHITE? Color.BLACK: Color.WHITE;
+    }
+
+    public Color WhoseTurn() {
+        return this.playerTurn;
+    }
+
+    private void InitGame() {
+
+        board[0][0] = new Rook(0, 0, Color.White);
+        board[0][1] = new Queen(0, 1, Color.White);
+        board[0][2] = new Pawn(0, 2, Color.White);
+        board[2][3] = new Knight(2, 3, Color.Black);
+        board[3][5] = new Rook(3, 5, Color.Black);
+    }
+
+    public void Move(Player player, int startX, int startY, int endX, int endY) {
+
+        if(this.playerTurn!=player.color)
+            throw new Exception("It is not your turn");
+
+        var piece = board[startX][startY];
+
+        if(piece.CanMove(endX,endY)) {
+            MakeMove(piece,endX,endY);
+            CheckWinner();
+            return;
+        }
+
+        throw new Exception("Choose correct position to move");
+    }
+
+    private void MakeMove(Piece p, int endX, int endY ) {
+        p.SetX(endX);
+        p.SetY(endY);
+        board[endX][endY] = p;
+        history.Add(p);
+        Turn();
+    }
+
+    private void CheckWinner() {
+        //TODO: scan whole board to find winner and change state
+    }
+
+    public void GetState() {
+
+        return this.state;
+    }
+
+    public Color GetWinner() {
+
+        if(this.state != State.WHITEWON || this.state != State.WHITEWON) {
+            throw new Exception("Game not finished or started");
+        }
+            
+        return state==state.WHITEWON ? Color.White: Color.Black
+
+    }
+
+    private void displayMessage(string message){
+        Console.WriteLine(message);
+
+    }
+
+}
+
+public abstract class Player {
+    public string name;
+    public Color color;
+    public Player(string name, Color color) {
+        this.name = name;
+        this.color = color;
+    } 
+}
+
+public class WhitePlayer: Player {
+    public WhitePlayer(string name): base(Color.WHITE, name) {}
+}
+
+public class BlackPlayer: Player {
+    public BlackPlayer(string name): base(Color.BLACK, name) {}
+}
+
+public enum Color {
+    WHITE, BLACK
+}
+
+public abstract class Piece {
+    public int positionX;
+    public int positionY;
+    public Color color;
+
+    public Piece(int pX, int pY, Color c) {
+        this.positionX = pX;
+        this.positionY = pY;
+        this.color = c;
+    }
+
+    public void SetX(int x) {
+        this.positionX = x;
+    }
+
+    public void SetY(int y) {
+        this.positionY = y;
+    }
+
+    public abstract bool CanMove(int nextX, int nextY);
+}
+
+public class King: Piece {
+
+    public King(int pX, int pY, Color c): base(pX, pY, c) {}
+
+    public override CanMove(int nextX, int nextY) {
+        if(nextX == positionX && nextY == positionY)
+            return false;
+        return true;    
+    }
+}
+
+public class Knight: Piece {
+
+    public Knight(int pX, int pY, Color c): base(pX, pY, c) {}
+
+    public override CanMove(int nextX, int nextY) {
+        if(nextX == positionX && nextY == positionY)
+            return false;
+        return true;    
+    }
+}
+
+public class Queen: Piece {
+
+    public Queen(int pX, int pY, Color c): base(pX, pY, c) {}
+
+    public override CanMove(int nextX, int nextY) {
+        if(nextX == positionX && nextY == positionY)
+            return false;
+        return true;    
+    }
+}
+
+public class Rook: Piece {
+
+    public Rook(int pX, int pY, Color c): base(pX, pY, c) {}
+
+    public override CanMove(int nextX, int nextY) {
+        if(nextX == positionX && nextY == positionY)
+            return false;
+        return true;    
+    }
+}
+
+public class Pawn: Piece {
+
+    public Rook(int pX, int pY, Color c): base(pX, pY, c) {}
+
+    public override CanMove(int nextX, int nextY) {
+        if(nextX == positionX && nextY == positionY)
+            return false;
+        return true;    
+    }
+}
